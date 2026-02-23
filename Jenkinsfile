@@ -35,7 +35,7 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 // Menjalankan Docker Compose yang baru saja diinstal di host
-                sh "docker-compose up -d --build"
+                sh "docker compose up -d --build"
             }
         }
     }
