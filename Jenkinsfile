@@ -34,10 +34,11 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                // Gunakan '>' untuk memastikan output diarahkan ke file baru
-                sh "cat nginx.conf > /tmp/nginx.conf"
-                // Beri izin baca agar docker-daemon bisa mengaksesnya
-                sh "chmod 644 /tmp/nginx.conf"
+                // Hapus sisa-sisa folder hantu jika ada
+                sh "rm -rf /tmp/nginx.conf" 
+                // Salin nginx.conf menjadi default.conf di folder /tmp host
+                sh "cat nginx.conf > /tmp/default.conf"
+                sh "chmod 644 /tmp/default.conf"
                 sh "docker compose up -d --build"
             }
         }
