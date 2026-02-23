@@ -34,8 +34,10 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                // Menyalin file agar bisa dibaca oleh Docker Host
-                sh "cp nginx.conf /tmp/nginx.conf"
+                // Gunakan '>' untuk memastikan output diarahkan ke file baru
+                sh "cat nginx.conf > /tmp/nginx.conf"
+                // Beri izin baca agar docker-daemon bisa mengaksesnya
+                sh "chmod 644 /tmp/nginx.conf"
                 sh "docker compose up -d --build"
             }
         }
