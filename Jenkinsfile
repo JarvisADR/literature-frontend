@@ -4,6 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "jarvisadr/literature-frontend"
         IMAGE_TAG = "latest"
+        DOCKER_HOST = "unix:///var/run/docker.sock"
     }
 
     stages {
