@@ -34,12 +34,9 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                // Hapus sisa-sisa folder hantu jika ada
-                sh "rm -rf /tmp/nginx.conf" 
-                // Salin nginx.conf menjadi default.conf di folder /tmp host
-                sh "cat nginx.conf > /tmp/default.conf"
-                sh "chmod 644 /tmp/default.conf"
-                sh "docker compose up -d --build"
+            sh "cat nginx.conf > /tmp/nginx.conf"
+            sh "cat /tmp/nginx.conf" // Untuk memastikan isinya benar di log Jenkins
+            sh "docker compose up -d --build --force-recreate"
             }
         }
     }
