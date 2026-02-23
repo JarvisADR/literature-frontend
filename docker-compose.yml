@@ -15,7 +15,7 @@ services:
         - "80:80"
       volumes:
         # Kita mount folder /tmp ke folder conf.d Nginx
-        - /tmp:/etc/nginx/conf.d/:ro
+        - /home/jarvis/nginx-config:/etc/nginx/conf.d/:ro
       depends_on:
         - frontend
       restart: always
