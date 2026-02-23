@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "JarvisADR/literature-frontend"
+        IMAGE_NAME = "jarvisadr/literature-frontend"
         IMAGE_TAG = "latest"
     }
 
@@ -10,15 +10,13 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 // Menggunakan repo sesuai instruksi poin 7
-                git url: 'https://github.com/sinambela99/literature-frontend', branch: 'main' [cite: 7]
+                git url: 'https://github.com/JarvisADR/literature-frontend', branch: 'main' [cite: 7]
             }
         }
 
         stage('Fix & Build Image') {
             steps {
                 script {
-                    // Wajib: Hapus baris 15 yang menyebabkan error build
-                    sh "sed -i '15d' Dockerfile"
                     sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                 }
             }
@@ -29,7 +27,7 @@ pipeline {
                 withCredentials([usernamePassword(
                 credentialsId: 'dockerhub-credentials',
                 usernameVariable: 'DOCKER_USER',
-                passwordVariable: 'DOCKER_PASS' // Ubah menjadi passwordVariable
+                passwordVariable: 'DOCKER_PASS'
             )])
                     sh """
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
