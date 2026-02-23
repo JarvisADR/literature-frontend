@@ -34,9 +34,8 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-            sh "cat nginx.conf > /tmp/nginx.conf"
-            sh "cat /tmp/nginx.conf" // Untuk memastikan isinya benar di log Jenkins
-            sh "docker compose up -d --build --force-recreate"
+                sh "cat nginx.conf > /home/jarvis/nginx-config/default.conf"
+                sh "docker compose up -d --build --force-recreate"
             }
         }
     }
