@@ -3,32 +3,32 @@ pipeline {
 
     environment {
         IMAGE_NAME = "jarvisadr/literature-frontend"
+        CONTAINER_NAME = "literature-frontend"
         IMAGE_TAG = "latest"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                // Menggunakan repo sesuai instruksi poin 7
-                git url: 'https://github.com/JarvisADR/literature-frontend', branch: 'main' [cite: 7]
+                checkout scm
             }
         }
 
-        stage('Fix & Build Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                    docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                 }
             }
         }
 
-        stage('Push Image') {
+        stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
-                credentialsId: 'dockerhub-credentials',
-                usernameVariable: 'DOCKER_USER',
-                passwordVariable: 'DOCKER_PASS'
-            )])
+                    credentialsId: 'docker-repo-jarvis',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
                     sh """
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         docker push ${IMAGE_NAME}:${IMAGE_TAG}
@@ -37,20 +37,38 @@ pipeline {
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Deploy Container') {
             steps {
-                // Wajib menggunakan docker compose sesuai instruksi poin 18
-                sh "docker compose up -d" [cite: 18]
+                script {
+                    // Stop & remove container lama kalau ada
+                    sh """
+                        if [ \$(docker ps -q -f name=${CONTAINER_NAME}) ]; then
+                          echo "Stopping existing container..."
+                          docker stop ${CONTAINER_NAME}
+                          docker rm ${CONTAINER_NAME}
+                        fi
+                        
+                        # Jalankan container baru
+                        docker run -d \\
+                          --name ${CONTAINER_NAME} \\
+                          -p 3030:3000 \\
+                          ${IMAGE_NAME}:${IMAGE_TAG}
+                    """
+                }
             }
         }
     }
 
     post {
         success {
-            echo "Deployment berhasil melalui Docker Compose" [cite: 19]
+            echo "✅ Deployment berhasil"
         }
         failure {
-            echo "Deployment gagal, periksa konfigurasi Docker Compose atau Dockerfile"
+            echo "❌ Deployment gagal"
+        }
+        always {
+            // Bersihkan dangling images & container yang tidak dipakai
+            sh "docker system prune -f"
         }
     }
 }
