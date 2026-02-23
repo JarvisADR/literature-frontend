@@ -3,31 +3,33 @@ pipeline {
 
     environment {
         IMAGE_NAME = "JarvisADR/literature-frontend"
-        CONTAINER_NAME = "literature-frontend"
         IMAGE_TAG = "latest"
     }
 
     stages {
         stage('Checkout Code') {
             steps {
-                checkout scm
+                // Menggunakan repo sesuai instruksi poin 7
+                git url: 'https://github.com/sinambela99/literature-frontend', branch: 'main' [cite: 7]
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Fix & Build Image') {
             steps {
                 script {
-                    docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                    // Wajib: Hapus baris 15 yang menyebabkan error build
+                    sh "sed -i '15d' Dockerfile"
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
                 }
             }
         }
 
-        stage('Push Docker Image') {
+        stage('Push Image') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-credentials',
                     usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
+                    usernameVariable: 'DOCKER_PASS'
                 )]) {
                     sh """
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
@@ -37,30 +39,20 @@ pipeline {
             }
         }
 
-        stage('Deploy Container') {
+        stage('Deploy with Docker Compose') {
             steps {
-                sh """
-                    docker stop ${CONTAINER_NAME} || true
-                    docker rm ${CONTAINER_NAME} || true
-
-                    docker run -d \\
-                      --name ${CONTAINER_NAME} \\
-                      -p 3000:3000 \\
-                      ${IMAGE_NAME}:${IMAGE_TAG}
-                """
+                // Wajib menggunakan docker compose sesuai instruksi poin 18
+                sh "docker compose up -d" [cite: 18]
             }
         }
     }
 
     post {
         success {
-            echo "Deployment berhasil"
+            echo "Deployment berhasil melalui Docker Compose" [cite: 19]
         }
         failure {
-            echo "Deployment gagal"
-        }
-        always {
-            sh "docker system prune -f"
+            echo "Deployment gagal, periksa konfigurasi Docker Compose atau Dockerfile"
         }
     }
 }
