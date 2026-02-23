@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         IMAGE_NAME = "jarvisadr/literature-frontend"
-        CONTAINER_NAME = "literature-frontend"
         IMAGE_TAG = "latest"
     }
 
@@ -17,6 +16,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
+                    // Build image sesuai Dockerfile yang ada
                     docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                 }
             }
@@ -24,11 +24,8 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-repo-jarvis',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
+                // Pastikan credentialsId sesuai dengan yang Anda buat di Jenkins
+                withCredentials([usernamePassword(credentialsId: 'docker-repo-jarvis', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh """
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                         docker push ${IMAGE_NAME}:${IMAGE_TAG}
@@ -37,37 +34,21 @@ pipeline {
             }
         }
 
-        stage('Deploy Container') {
+        stage('Deploy with Docker Compose') {
             steps {
                 script {
-                    // Stop & remove container lama kalau ada
-                    sh """
-                        if [ \$(docker ps -q -f name=${CONTAINER_NAME}) ]; then
-                          echo "Stopping existing container..."
-                          docker stop ${CONTAINER_NAME}
-                          docker rm ${CONTAINER_NAME}
-                        fi
-                        
-                        # Jalankan container baru
-                        docker run -d \\
-                          --name ${CONTAINER_NAME} \\
-                          -p 3030:3000 \\
-                          ${IMAGE_NAME}:${IMAGE_TAG}
-                    """
+                    // Menjalankan deployment otomatis menggunakan Docker Compose
+                    // Perintah ini akan mem-build ulang dan deploy container yang didefinisikan di docker-compose.yml
+                    sh "docker-compose up -d --build"
                 }
             }
         }
     }
 
     post {
-        success {
-            echo "✅ Deployment berhasil"
-        }
-        failure {
-            echo "❌ Deployment gagal"
-        }
+        success { echo "✅ Deployment Berhasil" }
+        failure { echo "❌ Deployment Gagal" }
         always {
-            // Bersihkan dangling images & container yang tidak dipakai
             sh "docker system prune -f"
         }
     }
