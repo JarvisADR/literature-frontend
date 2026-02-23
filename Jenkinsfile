@@ -34,7 +34,8 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                // Menjalankan Docker Compose yang baru saja diinstal di host
+                // Menyalin file agar bisa dibaca oleh Docker Host
+                sh "cp nginx.conf /tmp/nginx.conf"
                 sh "docker compose up -d --build"
             }
         }
