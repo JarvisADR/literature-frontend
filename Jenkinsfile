@@ -15,16 +15,13 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    // Build image sesuai Dockerfile yang ada
-                    docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                }
+                // Menggunakan sh agar Jenkins memanggil Docker host melalui socket
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                // Pastikan credentialsId sesuai dengan yang Anda buat di Jenkins
                 withCredentials([usernamePassword(credentialsId: 'docker-repo-jarvis', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh """
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
@@ -36,11 +33,8 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                script {
-                    // Menjalankan deployment otomatis menggunakan Docker Compose
-                    // Perintah ini akan mem-build ulang dan deploy container yang didefinisikan di docker-compose.yml
-                    sh "docker-compose up -d --build"
-                }
+                // Menjalankan Docker Compose yang baru saja diinstal di host
+                sh "docker-compose up -d --build"
             }
         }
     }
