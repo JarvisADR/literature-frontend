@@ -37,7 +37,9 @@ pipeline {
                 sh "mkdir -p nginx-runtime-config"
                 sh "cat nginx.conf > nginx-runtime-config/default.conf"
                 
-                // Tambahkan langkah ini untuk membuat config Prometheus
+                // Tambahkan baris rm ini untuk menghapus folder palsu jika ada
+                sh "rm -rf prometheus.yml" 
+                
                 sh """
                 cat <<EOF > prometheus.yml
 global:
