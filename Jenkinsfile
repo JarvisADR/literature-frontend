@@ -34,15 +34,16 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                // 1. Salin nginx.conf dari workspace Jenkins ke folder jembatan di Host Ubuntu
-                // Kita gunakan path absolut yang sudah kita verifikasi tadi
-                sh "cat nginx.conf > /var/lib/docker/volumes/jenkins_home/_data/workspace/literature-frontend_main/nginx-runtime-config/default.conf"
+                // Jenkins akan otomatis membuat folder ini di dalam workspace-nya
+                sh "mkdir -p nginx-runtime-config"
                 
-                // 2. Beri izin baca agar container Nginx bisa mengaksesnya
-                sh "chmod 644 /var/lib/docker/volumes/jenkins_home/_data/workspace/literature-frontend_main/nginx-runtime-config/default.conf"
+                // Gunakan path relatif, Jenkins pasti kenal folder ini
+                sh "cat nginx.conf > nginx-runtime-config/default.conf"
                 
-                // 3. Jalankan Docker Compose
-                // Menggunakan --force-recreate agar Nginx memuat volume yang baru
+                // Beri izin agar Docker Host bisa membacanya
+                sh "chmod 777 nginx-runtime-config"
+                sh "chmod 644 nginx-runtime-config/default.conf"
+                
                 sh "docker compose up -d --build --force-recreate"
             }
         }
