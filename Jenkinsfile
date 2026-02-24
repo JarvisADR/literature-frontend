@@ -34,7 +34,15 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                sh "cat nginx.conf > /home/jarvis/nginx-config/default.conf"
+                // 1. Salin nginx.conf dari workspace Jenkins ke folder jembatan di Host Ubuntu
+                // Kita gunakan path absolut yang sudah kita verifikasi tadi
+                sh "cat nginx.conf > /var/lib/docker/volumes/jenkins_home/_data/workspace/literature-frontend_main/nginx-runtime-config/default.conf"
+                
+                // 2. Beri izin baca agar container Nginx bisa mengaksesnya
+                sh "chmod 644 /var/lib/docker/volumes/jenkins_home/_data/workspace/literature-frontend_main/nginx-runtime-config/default.conf"
+                
+                // 3. Jalankan Docker Compose
+                // Menggunakan --force-recreate agar Nginx memuat volume yang baru
                 sh "docker compose up -d --build --force-recreate"
             }
         }
