@@ -9,13 +9,13 @@ services:
     restart: always
 
   nginx:
-      image: nginx:alpine
-      container_name: nginx-proxy
-      ports:
-        - "80:80"
-      volumes:
-        # Kita mount folder /tmp ke folder conf.d Nginx
-        - /home/jarvis/nginx-config:/etc/nginx/conf.d/:ro
-      depends_on:
-        - frontend
-      restart: always
+    image: nginx:alpine
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+    volumes:
+      # Gunakan path absolut yang sudah kita verifikasi dengan 'ls -d' tadi
+      - /var/lib/docker/volumes/jenkins_home/_data/workspace/literature-frontend_main/nginx-runtime-config:/etc/nginx/conf.d/:ro
+    depends_on:
+      - frontend
+    restart: always
