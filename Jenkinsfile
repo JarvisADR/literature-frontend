@@ -34,16 +34,23 @@ pipeline {
 
         stage('Deploy with Docker Compose') {
             steps {
-                // Jenkins akan otomatis membuat folder ini di dalam workspace-nya
                 sh "mkdir -p nginx-runtime-config"
-                
-                // Gunakan path relatif, Jenkins pasti kenal folder ini
                 sh "cat nginx.conf > nginx-runtime-config/default.conf"
                 
-                // Beri izin agar Docker Host bisa membacanya
-                sh "chmod 777 nginx-runtime-config"
-                sh "chmod 644 nginx-runtime-config/default.conf"
-                
+                // Tambahkan langkah ini untuk membuat config Prometheus
+                sh """
+                cat <<EOF > prometheus.yml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+EOF
+                """
+
+                sh "chmod 777 nginx-runtime-config prometheus.yml"
                 sh "docker compose up -d --build --force-recreate"
             }
         }
