@@ -14,7 +14,6 @@ services:
     ports:
       - "80:80"
     volumes:
-      # Gunakan path absolut yang sudah kita verifikasi dengan 'ls -d' tadi
       - /var/lib/docker/volumes/jenkins_home/_data/workspace/literature-frontend_main/nginx-runtime-config:/etc/nginx/conf.d/:ro
     depends_on:
       - frontend
